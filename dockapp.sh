@@ -1,15 +1,17 @@
 #!/bin/bash
 
 #
-# Auteur : Joachim Schmidt <joachim.schmidt@openmailbox.org>
+# Author: Joachim Schmidt <joachim.schmidt@openmailbox.org>
+#         Robert Berger <robert.berger@reliableembeddedsystems.com>
 #
-# Date : 27 septembre 2015
+# Date: 21 dec. 2015
+#       27 septembre 2015
 #
-# Version : 0.1
+# Version: 0.1-en
 #
 
-# Script pour exécuter l'environnement de développement Vivado de la
-# société Xilinx dans un conteneur.
+# Script to ron the development environment of Xilinx/Vivado
+# in a container.
 
 VERT="\\033[1;32m"
 NORMAL="\\033[0;39m"
@@ -21,41 +23,62 @@ BLANCCLAIR="\\033[1;08m"
 JAUNE="\\033[1;33m"
 CYAN="\\033[1;36m"
 
+
+ -d <device name>
+    See the result of the lsusb command.
+ -p <device_1>:<device_2>:<...>
+    Mapping the list of devices.
+    Devices of type /dev/ttyUSB*
+    and the devices associated with
+    the development board are mapped
+    automatically.
+ -i <name of the Docker image>
+ -c <command name to be executed by Docker>
+ -f <folder_1>:<folder_2>:<...>
+    Mapping the folder list.
+    The folder /tmp/.X11-unix is automatically
+    mapped.
+ -h
+    Display the online help.
+ -v
+    Display the version of the script.
+
+
 function print_help
 {
-    echo -e "Commande : ${JAUNE}run_dockapp${NORMAL} ${VERT}<liste des paramètres> <...>${NORMAL}"
+    echo -e "Command: ${JAUNE}run_dockapp${NORMAL} ${VERT}<parameter list> <...>${NORMAL}"
     echo -e ""
-    echo -e "Liste des paramètres :"
+    echo -e "Parameter list:"
     echo -e ""
-    echo -e " ${BLEU}-d${NORMAL} ${VERT}<nom du device>${NORMAL}"
-    echo -e "    Voir le résultat de la commande ${ROUGE}lsusb${NORMAL}."
-    echo -e " ${BLEU}-p${NORMAL} ${VERT}<périphérique_1>:<périphérique_2>:<...>${NORMAL}"
-    echo -e "    Mappage de la liste des périphériques."
-    echo -e "    ${ROUGE}Les périphérique de type /dev/ttyUSB*${NORMAL}"
-    echo -e "    ${ROUGE}ainsi que le périphérique associé à la${NORMAL}"
-    echo -e "    ${ROUGE}carte de développement sont automatiquement${NORMAL}"
-    echo -e "    ${ROUGE}mappé.${NORMAL}"
-    echo -e " ${BLEU}-i${NORMAL} ${VERT}<nom de l'image Docker>${NORMAL}"
-    echo -e " ${BLEU}-c${NORMAL} ${VERT}<nom de la commande à exécuter par Docker>${NORMAL}"
-    echo -e " ${BLEU}-f${NORMAL} ${VERT}<Dossier_1>:<Dossier_2>:<...>${NORMAL}"
-    echo -e "    Mappage de la liste des dossiers."
-    echo -e "    ${ROUGE}Le dossier $X11FOLD est automatiquement${NORMAL}"
-    echo -e "    ${ROUGE}mappé.${NORMAL}"
+    echo -e " ${BLEU}-d${NORMAL} ${VERT}<device name>${NORMAL}"
+    echo -e "    See the result of the ${ROUGE}lsusb${NORMAL} command."
+    echo -e " ${BLEU}-p${NORMAL} ${VERT}<device_1>:<device_2>:<...>${NORMAL}"
+    echo -e "    Mapping the list of devices."
+    echo -e "    ${ROUGE}Devices of type /dev/ttyUSB*${NORMAL}"
+    echo -e "    ${ROUGE}and the devices associated with the${NORMAL}"
+    echo -e "    ${ROUGE}development board are mapped${NORMAL}"
+    echo -e "    ${ROUGE}automatically.${NORMAL}"
+    echo -e " ${BLEU}-i${NORMAL} ${VERT}<name of the Docker image>${NORMAL}"
+    echo -e " ${BLEU}-c${NORMAL} ${VERT}<command name to be executed by Docker>${NORMAL}"
+    echo -e " ${BLEU}-f${NORMAL} ${VERT}<folder_1>:<folder_2>:<...>${NORMAL}"
+    echo -e "    Mapping the folder list."
+    echo -e "    ${ROUGE}The folder $X11FOLD is automatically${NORMAL}"
+    echo -e "    ${ROUGE}mapped.${NORMAL}"
     echo -e " ${BLEU}-h${NORMAL}"
-    echo -e "    Affichage de l'aide en ligne."
+    echo -e "    Display the online help."
     echo -e " ${BLEU}-v${NORMAL}"
-    echo -e "    Affichage de la version du script."
+    echo -e "    Display the version of the script."
 }
 
 function print_version
 {
-    echo -e "Version :"
-    echo -e "(run_dockapp 0.1)"
+    echo -e "Version:"
+    echo -e "(run_dockapp 0.1-en)"
 }
 
 function run_dockapp
 {
-    local USB_BOARD="" # Variable désignant la carte de développement.
+    local USB_BOARD="" # Variable denoting the development board.
     local BUS=""
     local DEV=""
     local DEVLST=""
@@ -65,13 +88,13 @@ function run_dockapp
     local X11FOLD="/tmp/.X11-unix"
 
     #
-    # Liste des arguments du script
+    # Argument list of the script
     #
-    # -p <nom du périphérique>
-    # -i <nom de l'image Docker>
-    # -c <commande à exécuter par Docker>
-    # -f <dossier à monter dans Docker>
-    # -h <Aide>
+    # -p <device name>
+    # -i <name of Docker image>
+    # -c <command to be executed by Docker>
+    # -f <folder for installation in Docker>
+    # -h <Help>
     #
 
     local OPTLST=":d:p:i:c:f:hv"
@@ -86,7 +109,7 @@ function run_dockapp
     OPTERR=0
     
     #
-    # On afficher l'aide si il n'y a aucun argument.
+    # Display help if there is no argument.
     #
     
     if [[ $# -eq 0 ]] ; then
@@ -95,7 +118,7 @@ function run_dockapp
     fi
 
     #
-    # Bouche pour analyser les options reçus en paramètre.
+    # Analyze the options received as paramters.
     #
     
     while getopts $OPTLST opt ; do
@@ -120,7 +143,7 @@ function run_dockapp
                 unset OPTARG
                 unset OPTERR
                 return 0 ;;
-            ? ) echo -e "${ROUGE}*${NORMAL} Option illégale -$OPTARG" >&2
+            ? ) echo -e "${ROUGE}*${NORMAL} Illegal option -$OPTARG" >&2
                 unset OPTIND
                 unset OPTARG
                 unset OPTERR
@@ -132,14 +155,14 @@ function run_dockapp
     unset opt
 
     #
-    # On vérifie si il y a des arguments restants non valides.
+    # Checks if there are invalid arguments remaining.
     #
     
     if [[ $# -ne 0 ]] ; then
         if [[ $# -eq 1 ]] ; then
-            echo -e -n "${ROUGE}*${NORMAL} Option illégale " >&2
+            echo -e -n "${ROUGE}*${NORMAL} Illegal option " >&2
         else
-            echo -e -n "${ROUGE}*${NORMAL} Options illégales " >&2
+            echo -e -n "${ROUGE}*${NORMAL} Illegal options " >&2
         fi
         
         while [[ $# -ne 0 ]] ; do
@@ -156,8 +179,8 @@ function run_dockapp
     fi
 
     #
-    # On vérifie qu'un périphérique a été mentionné en arguement et
-    # on récupère les numéros de bus et du périphérique USB.
+    # It is verified that a device was mentioned in the argment
+    # and recovered bus numbers and USB device numbers.
     #
     local res=0
     
@@ -166,7 +189,7 @@ function run_dockapp
         res=$?
         unset opt_dev
     else
-        echo -e "${ROUGE}*${NORMAL} Aucune carte de développement n'a été spécifiée." >&2
+        echo -e "${ROUGE}*${NORMAL} No development board has been specified." >&2
         echo -e ""
         print_help
         unset OPTIND
@@ -176,11 +199,11 @@ function run_dockapp
     fi
 
     #
-    # On vérifie le bon déroulement de la commande lsusb.
+    # We verify the smooth running of the lsusb command.
     #
     
     if [[ $res -ne 0 ]] ; then
-        echo -e "${ROUGE}*${NORMAL} Aucune carte de développement correspondante à ${ROUGE}${USB_BOARD}${NORMAL} n'est connectée." >&2
+        echo -e "${ROUGE}*${NORMAL} No corresponding development board for ${ROUGE}${USB_BOARD}${NORMAL} is connected." >&2
         echo -e ""
         print_help
         unset OPTIND
@@ -192,14 +215,14 @@ function run_dockapp
     unset res
 
     #
-    # On vérifie qu'un image Docker a été mentionnée en argument.
+    # We verify that a Docker image was mentioned in the argument.
     #
 
     if [[ $opt_img -ne 0 ]] ; then
         echo -e "${VERT}*${NORMAL} Image Docker ${VERT}${DOCKIMG}${NORMAL}"
         unset opt_img
     else
-        echo -e "${ROUGE}*${NORMAL} Aucune image Docker n'a été spécifiée." >&2
+        echo -e "${ROUGE}*${NORMAL} No Docker image was specified." >&2
         echo -e ""
         print_help
         unset OPTIND
@@ -209,20 +232,20 @@ function run_dockapp
     fi
 
     #
-    # On vérifie qu'une commande Docker a été mentionnée en argument.
+    # We verify that a Docker command was mentioned in the argument.
     #
 
     if [[ $opt_cmd -ne 0 ]] ; then
-        echo -e "${VERT}*${NORMAL} Command à exécuter par Docker ${VERT}${CMD}${NORMAL}"
+        echo -e "${VERT}*${NORMAL} Command to be executed by Docker ${VERT}${CMD}${NORMAL}"
         unset opt_cmd
     else
-        echo -e "${ROUGE}*${NORMAL} Aucune command n'a été spécifiée." >&2
-        echo -e "${ROUGE}*${NORMAL} La commande par défaut est ${VERT}${CMD}${NORMAL}" >&2
+        echo -e "${ROUGE}*${NORMAL} No command was specified." >&2
+        echo -e "${ROUGE}*${NORMAL} The default command is ${VERT}${CMD}${NORMAL}" >&2
     fi
 
     #
-    # On génère la liste de périphériques à mapper entre l'environnement
-    # hôte et l'environnement du conteneur.
+    # The device list is generated to map between the host environment
+    # and the environment of the container.
     #
 
     if [[ $opt_perif -ne 0 ]] ; then
@@ -233,7 +256,7 @@ function run_dockapp
 
         for i in $TMP ; do
             DEVLST=$(echo "$DEVLST --device=${i}:${i}")
-            echo -e "${VERT}*${NORMAL} Mappage du périphérique ${VERT}${i}${NORMAL}"
+            echo -e "${VERT}*${NORMAL} Mapping device ${VERT}${i}${NORMAL}"
         done
         
         unset TMP
@@ -245,28 +268,28 @@ function run_dockapp
     BUS=$(echo $BUS_DEV | awk 'BEGIN{FS=" "} {print $1}')
     DEV=$(echo $BUS_DEV | awk 'BEGIN{FS=" "} {print $2}')
 
-    echo -e "${VERT}*${NORMAL} Numéro de bus du périphérique usb ${ROUGE}$USB_BOARD${NORMAL} : ${VERT}${BUS}${NORMAL}"
-    echo -e "${VERT}*${NORMAL} Numéro du périphérique usb ${ROUGE}$USB_BOARD${NORMAL} : ${VERT}${DEV}${NORMAL}"
+    echo -e "${VERT}*${NORMAL} Usb device bus number ${ROUGE}$USB_BOARD${NORMAL} : ${VERT}${BUS}${NORMAL}"
+    echo -e "${VERT}*${NORMAL} Usb device number ${ROUGE}$USB_BOARD${NORMAL} : ${VERT}${DEV}${NORMAL}"
     
     DEVLST="$DEVLST --device=/dev/bus/usb/$BUS/$DEV:/dev/bus/usb/$BUS/$DEV "
-    echo -e "${VERT}*${NORMAL} Mappage du périphérique ${VERT}/dev/bus/usb/$BUS/$DEV${NORMAL}"
+    echo -e "${VERT}*${NORMAL} Mapping device ${VERT}/dev/bus/usb/$BUS/$DEV${NORMAL}"
 
     #
-    # Mappage automatique des périphériques de type série via USB (/dev/ttyUSB*).
+    # Automatic mapping of serial type devices via USB (/dev/ttyUSB*).
     #
     
     local DEVTTY=$(ls /dev/ttyUSB*)
 
     for i in $DEVTTY ; do
         DEVLST="$DEVLST --device=$i:$i "
-        echo -e "${VERT}*${NORMAL} Mappage du périphérique ${VERT}${i}${NORMAL}"
+        echo -e "${VERT}*${NORMAL} Mapping device ${VERT}${i}${NORMAL}"
     done
 
     unset DEVTTY
     
     #
-    # On génère la liste des dossiers à mapper entre l'environnement hôte
-    # et l'environnement du conteneur.
+    # The folder list is generated to map between the host environment
+    # and the environment of the container.
     #
 
     if [[ $opt_fold -ne 0 ]] ; then
@@ -277,7 +300,7 @@ function run_dockapp
 
         for i in $TMP ; do
             FOLDLST=$(echo "$FOLDLST -v ${i}:${i}")
-            echo -e "${VERT}*${NORMAL} Mappage du dossier ${VERT}${i}${NORMAL}"
+            echo -e "${VERT}*${NORMAL} Mapping file ${VERT}${i}${NORMAL}"
         done
 
         unset TMP
@@ -285,21 +308,21 @@ function run_dockapp
     fi
 
     FOLDLST=$(echo "$FOLDLST -v $X11FOLD:$X11FOLD")
-    echo -e "${VERT}*${NORMAL} Mappage du dossier ${VERT}${X11FOLD}${NORMAL}"
+    echo -e "${VERT}*${NORMAL} Mapping file ${VERT}${X11FOLD}${NORMAL}"
 
     #
-    # On exécute la commande dans le conteneur Docker.
+    # It executes the command in the Docker container.
     #
 
-    echo -e "${VERT}*${NORMAL} Démarrage d'une nouvelle instance de l'image Docker..."
+    echo -e "${VERT}*${NORMAL} Starting a new instance of the Docker image..."
     echo -e ""
 
     eval "docker run --name xilinx_vivado --rm -i -t $DEVLST -e DISPLAY=$DISPLAY $FOLDLST $DOCKIMG $CMD"
 
-    echo -e "${VERT}*${NORMAL} Fermeture et suppression de l'instance de l'image Docker."
+    echo -e "${VERT}*${NORMAL} Closing and deleting the instance of the Docker image."
 
     #
-    # On supprime les variables locales
+    # Local variables are eliminated
     #
     
     unset USB_BOARD
@@ -312,8 +335,8 @@ function run_dockapp
     unset X11FOLD
 
     #
-    # On supprime également les variables globales liées à la gestion
-    # des options.
+    # Also global variables related to management options
+    # are removed.
     #
     
     unset OPTIND

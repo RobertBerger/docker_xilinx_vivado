@@ -1,22 +1,22 @@
 # docker_xilinx_vivado
-Docker Ubuntu + Oracle JDK pour l'exécution d'un environnement de développement Xilinx Vivado.
+Docker Ubuntu + Oracle JDK for running a Xilinx Vivado development environment.
 
 ## Dockerfile
 
-Le fichier Dockerfile contenu dans ce dépôt permet de générer une image contenant les dépendances pour l'environnement de développement Vivado de Xilinx.
+The file Dockerfile from this repository can generate an image containing dependencies for the Xilinx Vivado development environment.
 
 ```bash
-docker build -t joco/ubuntu-for-xilinx-vivado .
+docker build -t ${USER}/ubuntu-for-xilinx-vivado .
 ```
+Of course, installing the Xilinx Vivado development environment, as well as obtaining a license (WebPak is free) is left to the user (and not automated in here).
 
-Bien entendu, l'installation de l'environnement de développement Vivado de Xilinx, ainsi que l'obtention d'une licence (WebPak est gratuite) est laissé au soin de l'utilisateur.
+## bash scripts
 
-## Les scripts bash
+The dockapp.sh script simplifies launching an instance of the Docker image described above.
+The second script script.sh contains different configurations to call the function run_dockerapp contained in the dockapp.sh script.
 
-Le script dockapp.sh permet de simplifier le lancement d'une instance de l'image Docker précédemment décrite.
-Le second script script.sh contient différentes configuration pour appeler la fonction run_dockapp contenu dans le script dockapp.sh.
+This is to avoid the user having to enter a command like this and knowing that they must change each time you disconnect and reconnect the development board.
 
-Ceci afin d'éviter à l'utilisateur de devoir saisir une commande comme la suivante et sachant qu'il faut la modifier à chaque fois que l'on débranche et rebranche la carte de développement.
 
 ```bash
 docker run --name xilinx_vivado --rm -i -t \ 
@@ -24,67 +24,67 @@ docker run --name xilinx_vivado --rm -i -t \
 --device=/dev/ttyUSB0:/dev/ttyUSB0 \
 --device=/dev/ttyUSB1:/dev/ttyUSB1 \
 -e DISPLAY=:0 \
--v /home/joco/docker_share:/home/joco/docker_share \
--v /home/joco/Documents/ITI4/VHDL_FPGA:/home/joco/Documents/ITI4/VHDL_FPGA \
+-v ${HOME}/docker_share:${HOME}/docker_share \
+-v ${HOME}/Documents/ITI4/VHDL_FPGA:${HOME}/Documents/ITI4/VHDL_FPGA \
 -v /tmp/.X11-unix:/tmp/.X11-unix \
-joco/xilinx-vivado /opt/Xilinx/Vivado/2015.2/bin/vivado
+${USER}/xilinx-vivado /opt/Xilinx/Vivado/2015.2/bin/vivado
 ```
 
-Il faut dans un premier temps sourcer les deux fichiers scripts dans le fichier ~/.bashrc.
+It should initially be enough to source the two script files in ~ / .bashrc.
 
-Ensuite l'appel des fonctions s'effectue comme suit :
+Then the following functions can be called:
 
-Lancement du conteneur avec la commande bash :
+Launch of the container with bash:
 
 ```bash
 dock_bash
 ```
 
-Lancement du conteneur avec la commande vivado :
+Launch of the container with the command vivado:
 
 ```bash
 dock_vivado
 ```
 
-Lancement du conteneur avec des paramètres spécifiques :
+Launch of the container with specific settings:
 
 ```bash
-run_dockapp -d <nom du device> \
--p <périphérique_1>:<périphérique_2>:<...> \
--i <nom de l'image Docker> \
--c <nom de la commande à exécuter par Docker> \
--f <Dossier_1>:<Dossier_2>:<...>
+run_dockapp -d <device name> \
+-p <device_1>:<device_2>:<...> \
+-i <name of the Docker image> \
+-c <command name to be executed by Docker> \
+-f <folder_1>:<folder_2>:<...>
 ```
 
-Une aide est également disponible :
+Help is also available:
 
 ```bash
 run_dockapp -h
 ```
 
 ```bash
-Commande : run_dockapp <liste des paramètres> <...>
+Command: run_dockapp <parameter list> <...>
 
-Liste des paramètres :
+Parameter list:
 
- -d <nom du device>
-    Voir le résultat de la commande lsusb.
- -p <périphérique_1>:<périphérique_2>:<...>
-    Mappage de la liste des périphériques.
-    Les périphérique de type /dev/ttyUSB*
-    ainsi que le périphérique associé à la
-    carte de développement sont automatiquement
-    mappé.
- -i <nom de l'image Docker>
- -c <nom de la commande à exécuter par Docker>
- -f <Dossier_1>:<Dossier_2>:<...>
-    Mappage de la liste des dossiers.
-    Le dossier /tmp/.X11-unix est automatiquement
-    mappé.
+ -d <device name>
+    See the result of the lsusb command.
+ -p <device_1>:<device_2>:<...>
+    Mapping the list of devices.
+    Devices of type /dev/ttyUSB*
+    and the devices associated with 
+    the development board are mapped
+    automatically.
+ -i <name of the Docker image>
+ -c <command name to be executed by Docker>
+ -f <folder_1>:<folder_2>:<...>
+    Mapping the folder list.
+    The folder /tmp/.X11-unix is automatically
+    mapped.
  -h
-    Affichage de l'aide en ligne.
+    Display the online help.
  -v
-    Affichage de la version du script.
+    Display the version of the script.
 ```
 
-Bien évidemment, le script peut être modifier selon les besoins de l'utilisateur.
+Of course, the script can be modified according to the needs of the user.
